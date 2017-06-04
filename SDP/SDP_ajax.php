@@ -80,7 +80,6 @@
 		$i = 1;
 		foreach($values_arr as $field=>$value)
 		{
-			echo ':'.$field. ' to '. $value;
 			$str_tmp = ':'.$field;
 			$sql->bindValue(':'.$field, $value);
 			$i++;
