@@ -9,6 +9,7 @@
 		try
 		{
 			$con = new PDO("mysql:host=$hostname;dbname=$dbname", $username, $password);
+			$con->exec("SET CHARACTER SET utf8");
 		}
 		catch(PDOException $e)
 		{
