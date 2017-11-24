@@ -85,8 +85,23 @@
 			$sql->bindValue(':'.$field, $value);
 			$i++;
 		}
-                //execute query
-		$sql->execute();
+		try {
+			//execute query
+			$sql->execute();
+		} catch (PDOException $e) {
+			//display error
+			echo 'Error: ' . $e->getMessage();
+			//end script execution
+			exit();
+		}
+		if($sql->errorInfo()[0]!= '00000')
+		{
+			//display error
+			echo 'Error: '.$sql->errorInfo()[2];
+			
+			//end script execution
+			exit();
+		}
 	        //send confiration message
 		echo 'row added';
                 //end script execution
@@ -121,8 +136,22 @@
 	");
 	$sql->bindParam(':value', $field_value);
 	$sql->bindParam(':indexid', $indexid);
-        //execute query
-	$sql->execute();
+	try {
+		//execute query
+		$sql->execute();
+	} catch (PDOException $e) {
+		//display error
+		echo 'Error: ' . $e->getMessage();
+		//end script execution
+		exit();
+	}
+	if($sql->errorInfo()[0]!= '00000')
+	{
+		//display error
+		echo 'Error: '.$sql->errorInfo()[2];
+		//end script execution
+		exit();
+	}
 	//send confiration message
 	echo 'Information updated.';
 
