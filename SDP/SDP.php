@@ -317,6 +317,7 @@
 		$sql_fields_first = true;
 		foreach($access as $field=>$permissions)
 		{
+			$permissions = preg_replace('/\s+/', ' ', $permissions);
 			$permissions_array = explode(',', $permissions);
 			$field_permissions[$field] = $permissions_array;
 			if(in_array('read', $permissions_array))
@@ -352,6 +353,7 @@
 		        echo '<tr>';
 			foreach($result[0] as $field=>$value)
 			{
+				
 				$field_addable = (in_array('new',$field_permissions[$field]))? true:false;
 				$field_isDate = (in_array('date',$field_permissions[$field]))? true:false;
 				$field_isText = (in_array('text',$field_permissions[$field]))? true:false;
