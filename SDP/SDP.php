@@ -18,7 +18,7 @@
                 // Basic Vars
 		$panel_uid = str_replace('.', '', uniqid("", true));
 		if($ajax_folder == '') $ajax_folder = './SDP/';
-		$ajax_url = $ajax_folder.'SPD_ajax.php';
+		$ajax_url = $ajax_folder.'SDP_ajax.php';
 		// Table Name Verification
 		$sql = $con->prepare("SHOW INDEX FROM $tablename;");
 		$sql->execute();
