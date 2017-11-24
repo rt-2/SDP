@@ -1,4 +1,5 @@
 <?php
+	require('./SDP_functions.inc.php');
         function SpawnSaarpDatabasePanel(array $sdp_sqlInfos, $tablename, array $access, $where, $order, $ajax_folder = '')
         {
                 // Mysql Connection
