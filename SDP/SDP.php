@@ -296,6 +296,9 @@
 							{
 								//data - response from server
 								alert(data);
+								if(data == 'Row added.'){
+									location.reload();
+								}
 							},
 							error: function (jqXHR, textStatus, errorThrown)
 							{
