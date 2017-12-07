@@ -19,9 +19,14 @@
 	$indexid = $_POST['indexid'];
 	$field_name = $_POST['field'];
 	$field_value = $_POST['value'];
-	$field_value = json_decode('"'.$field_value.'"');
+	$field_value = json_decode('"'.$field_value.'"'); // this acts as fromHex
 	$field_value = strtr($field_value, array("\r\n" => '<br>', "\r" => '<br>', "\n" => '<br>'));
 	$values = $_POST['values'];
+	
+	
+	
+	echo "\n\n".substr($field_value, 0, 30);;
+	
         //fetch session vars
 	session_start();
 	$tablename = $_SESSION['SDP']['SDP_'.$panel_uid]['tablename'];
@@ -51,7 +56,7 @@
 	{
 		//vars
 		$values_arr = json_decode($values);
-                //prepare query
+        //prepare query
 		foreach($values_arr as $field=>$value)
 		{
 			$permissions_array = explode(',', $fields_permissions[$field]);
