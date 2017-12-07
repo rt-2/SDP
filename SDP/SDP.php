@@ -224,60 +224,125 @@
 					var Player_Current_Clipboard = '';
 					var panel_uid = '<?php echo $panel_uid; ?>';
 					var ajax_url = '<?php echo $ajax_url; ?>';
+					
+					function SDP_<?php echo $panel_uid; ?>_SendFieldEdit(indexid, field_uid, field_name, new_value) {
+						
+						alert('the value0: '+new_value);
+						alert('the value: '+toHex(new_value));
+						$.ajax({
+							url : ajax_url,
+							type: "POST",
+							data : {
+								panel_uid: panel_uid,
+								indexid: indexid,
+								field: field_name,
+								value: toHex(new_value)
+							},
+							success: function(data, textStatus, jqXHR)
+							{
+								//data - response from server
+								alert(data);
+							},
+							error: function (jqXHR, textStatus, errorThrown)
+							{
+						 
+							}
+						});
+					}
+					
 					$(".SDP_<?php echo $panel_uid; ?>_editable").click(function() {
 						// vars
-						view_element = $(this);
-						field_uid = view_element.attr('data-fielduid');
-						editor_element = $("#SDP_write_"+field_uid);
-						data_valAttr = editor_element.attr('data-valAttr');
-						Player_Current_Clipboard = editor_element.val();
+						var view_element = $(this);
+						var field_uid = view_element.attr('data-fielduid');
+						var editor_element = $("#SDP_write_"+field_uid);
+						var data_valAttr = editor_element.attr('data-valAttr');
 						// action
-						view_element.hide();
-						editor_element.show();
-						editor_element.focus();
+						if(!$(this).hasClass('SDP_blob'))
+						{
+							Player_Current_Clipboard = editor_element.val();
+							
+							view_element.hide();
+							editor_element.show();
+							editor_element.focus();
+						}
 					});
 					$(".SDP_<?php echo $panel_uid; ?>_editor").focusout(function() {
-						// Vars
-						editor_element = $(this);
-						indexid = editor_element.attr('data-indexid');
-						field_uid = editor_element.attr('data-fielduid');
-						field_name = editor_element.attr('data-fieldname');
-						view_element = $("#SDP_view_"+field_uid);
-						data_valAttr = editor_element.attr('data-valAttr');
-						// Action
-						var new_value;
-						new_value = editor_element.val();
-						if(new_value != Player_Current_Clipboard)
+						if(!$(this).hasClass('SDP_blob'))
 						{
-							//change been made
-							view_element.html(new_value);
-							view_element.attr('data-tip', new_value.replace('"', "''"));
-							$.ajax({
-								url : ajax_url,
-								type: "POST",
-								data : {
-									panel_uid: panel_uid,
-									indexid: indexid,
-									field: field_name,
-									value: toHex(new_value)
-								},
-								success: function(data, textStatus, jqXHR)
-								{
-									//data - response from server
-									alert(data);
-								},
-								error: function (jqXHR, textStatus, errorThrown)
-								{
-							 
-								}
-							});
+							// Vars
+							var editor_element = $(this);
+							var indexid = editor_element.attr('data-indexid');
+							var field_uid = editor_element.attr('data-fielduid');
+							var field_name = editor_element.attr('data-fieldname');
+							var view_element = $("#SDP_view_"+field_uid);
+							var data_valAttr = editor_element.attr('data-valAttr');
+							// Action
+							var new_value;
+							new_value = editor_element.val();
+							if(new_value != Player_Current_Clipboard)
+							{
+								//change been made
+								view_element.html(new_value);
+								view_element.attr('data-tip', new_value.replace('"', "''"));
+								
+								SDP_<?php echo $panel_uid; ?>_SendFieldEdit(indexid, field_uid, field_name, new_value)
+							}
+							editor_element.hide();
+							view_element.show();
 						}
-						editor_element.hide();
-						view_element.show();
+					});
+					$(".SDP_<?php echo $panel_uid; ?>_editor").change(function() {
+						if($(this).hasClass('SDP_blob'))
+						{
+							
+							
+							// Vars
+							var editor_element = $(this);
+							var indexid = editor_element.attr('data-indexid');
+							var field_uid = editor_element.attr('data-fielduid');
+							var field_name = editor_element.attr('data-fieldname');
+							var view_element = $("#SDP_view_"+field_uid+" img").first();
+							var data_valAttr = editor_element.attr('data-valAttr');
+							
+							// Action
+							
+							//console.log(editor_element);
+							//console.log(editor_element[0].files);
+							//console.log(editor_element[0].files[0]);
+							
+							if (editor_element[0].files && editor_element[0].files[0]) {
+								
+								var file_value = editor_element[0].files[0];
+									
+								//if(new_value != Player_Current_Clipboard)
+								//{
+									var img_FRObject = new FileReader();
+									var txt_FRObject = new FileReader();
+									img_FRObject.readAsDataURL(file_value);
+									txt_FRObject.readAsText(file_value);
+
+									
+									img_FRObject.onload = function (oFREvent) {
+										
+										var img_value = oFREvent.target.result;
+										
+										view_element.attr('src', img_value);
+									};
+									txt_FRObject.onload = function (oFREvent) {
+										
+										var new_value = oFREvent.target.result;
+										
+										SDP_<?php echo $panel_uid; ?>_SendFieldEdit(indexid, field_uid, field_name, new_value);
+									};
+									
+								//}
+							}
+						}
+						
 					});
 					$(".SDP_<?php echo $panel_uid; ?>_newButton").click(function() {
 						// Vars
-						indexid = 0;
+						var indexid = 0;
 						var new_values_arr = new Array();
 						var new_values = '';
 						var first_value = true;
@@ -338,12 +403,8 @@
 			$permissions_array = explode(',', $permissions);
 			$field_permissions[$field] = $permissions_array;
 			
-			echo '<br>'."test1 $field";
-			var_dump($permissions_array);
-			
 			if(in_array('read', $permissions_array))
 			{
-			echo '<br>'."test`2 $field";
 				if($sql_fields_first)
 				{
 					$sql_fields_first = false;
@@ -356,7 +417,6 @@
 			}
 			if(in_array('new', $permissions_array))
 			{
-			echo '<br>'."test3 $field";
 				$sql_hasAddPerm = true;
 			}
 		}
@@ -390,7 +450,7 @@
 		if($sql_hasAddPerm)
 		{
 		    echo '<tr>';
-			var_dump($result);
+			//var_dump($result);
 			foreach($columns as $field=>$this_column)
 			{
 				$field_addable = (in_array('new', $field_permissions[$field]))? true:false;
@@ -457,6 +517,7 @@
 				$field_editable = (in_array('write',$field_permissions[$field]))? true:false;
 				$field_isDate = (in_array('date',$field_permissions[$field]))? true:false;
 				$field_isText = (in_array('text',$field_permissions[$field]))? true:false;
+				$field_isBlob = (in_array('blob',$field_permissions[$field]))? true:false;
 				$field_hasMax = (in_array('max',$field_permissions[$field]))? true:false;
 				$field_isMaxed = ($field_hasMax && strlen($value) > 25);
 				$value_forQuotes = str_replace(array("\n", '"'), array("<br>", "''"), $value);
@@ -466,6 +527,7 @@
 				echo '<td>';
 				echo '<div ';
 				echo'id="SDP_view_'.$field_uid.'" ';
+				if($field_isBlob) $div_class .= 'SDP_blob ';
 				if($field_isMaxed)
 				{
 					$div_class .= 'tip ';
@@ -476,30 +538,48 @@
 				if($field_editable) $div_class .= 'SDP_'.$panel_uid.'_editable ';
 				echo 'class="'.$div_class.'" ';
 				echo '>';
-				echo (strlen($value) > 0)? $value:'&nbsp;';
+				
+				if($field_isBlob)
+				{
+					
+					
+					echo '<img src="data:image/jpeg;base64,'.base64_encode( $value ).'"/>';
+				}
+				else{
+					
+					echo (strlen($value) > 0)? $value:'&nbsp;';
+				}
+				
+				
+				
 				echo '</div>';
 				if($field_editable)
 				{
 					if($field_isText)
 					{
 						echo '<textarea ';
+					} elseif($field_isBlob) {
+						echo '<input type="file" ';
 					} else {
 						echo '<input type="text" ';
 					}
 					echo'id="SDP_write_'.$field_uid.'" ';
 					echo 'class="SDP_'.$panel_uid.'_editor ';
 					if($field_isDate) echo 'SDP_dateMasked ';
+					if($field_isBlob) echo 'SDP_blob ';
 					echo'" ';
 					echo'data-fielduid="'.$field_uid.'" ';
 					echo'data-fieldname="'.$field.'" ';
 					echo'data-indexid="'.$rowindexid.'" ';
-					echo'style="display:none" ';
+					if(!$field_isBlob) echo'style="display:none" ';
 					
 					if($field_isText)
 					{
 						echo '>';
 						echo $value_complete;
 						echo '</textarea>';
+					} elseif($field_isBlob) {
+						echo '>';
 					} else {
 						echo'value="'.$value_forQuotes.'" ';
 						echo '>';
