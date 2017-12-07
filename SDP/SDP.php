@@ -1,4 +1,11 @@
 <?php
+	
+	define('SDP_LOGLEVEL_NONE', 0);
+	define('SDP_LOGLEVEL_COMPACT', 1);
+	define('SDP_LOGLEVEL_COMPLETE', 2);
+	
+	$SDP_logLevel = SDP_LOGLEVEL_NONE;
+	
 	//getRelativePath - found here <https://stackoverflow.com/questions/2637945/getting-relative-path-from-absolute-path-in-php>
 	function getRelativePath($from, $to)
 	{
@@ -32,8 +39,9 @@
 		}
 		return implode('/', $relPath);
 	}
-        function SpawnSaarpDatabasePanel(array $sdp_sqlInfos, $tablename, array $access, $where, $order)
-        {
+	
+	function SpawnSaarpDatabasePanel(array $sdp_sqlInfos, $tablename, array $access, $where, $order)
+	{
                 // Mysql Connection
                 $hostname = $sdp_sqlInfos['hostname'];
                 $username = $sdp_sqlInfos['username'];
@@ -46,11 +54,16 @@
 		}
 		catch(PDOException $e)
 		{
-			echo $e->getMessage();
+			echo $e->getCode() .': '. $e->getMessage();
 		}
                 // Basic Vars
 		$panel_uid = str_replace('.', '', uniqid("", true));
 		$ajax_url = getRelativePath($_SERVER["SCRIPT_FILENAME"], realpath(__DIR__)).'SDP_ajax.php';
+		
+		// (new) 
+		
+		
+		
 		// Table Name Verification
 		$sql = $con->prepare("SHOW INDEX FROM $tablename;");
 		$sql->execute();
@@ -66,13 +79,14 @@
 			ob_end_clean();
 			return "no index on table `$tablename`";
 		}
-	
+		
 		// Session Vars
 		session_start();
 		$_SESSION['SDP']['SDP_'.$panel_uid]['sqlInfos'] = $sdp_sqlInfos;
 		$_SESSION['SDP']['SDP_'.$panel_uid]['tablename'] = $tablename;
 		$_SESSION['SDP']['SDP_'.$panel_uid]['index'] = $tableindex;
 		$_SESSION['SDP']['SDP_'.$panel_uid]['access'] = $access;
+		$_SESSION['SDP']['SDP_'.$panel_uid]['loglevel'] = $SDP_logLevel;
                 // BEGIN of Result Code
 		ob_start();
 		?>
@@ -476,4 +490,10 @@
                 // Return Code
 		return $return_str;
 	}
+	
+	function SetSaarpDatabaseLogLevel($tablenamestring, $loglevel)
+	{
+		$SDP_logLevel = $loglevel;
+	}
+	
 ?>
