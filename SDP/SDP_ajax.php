@@ -104,7 +104,7 @@
 			exit();
 		}
 	        //send confiration message
-		echo 'row added';
+		echo 'Row added.';
                 //end script execution
 		exit();
 	}
@@ -153,6 +153,10 @@
 		//end script execution
 		exit();
 	}
+	
+	echo $SDP_logLevel;
+	echo "\n\n";
+	
 	
 	//send confiration message
 	echo 'Information updated.';
