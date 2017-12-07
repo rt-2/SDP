@@ -360,7 +360,7 @@
 		");
 		$sql->execute();
 		$result = $sql->fetchAll(PDO::FETCH_ASSOC);
-		$columnNb = count($result[0]);
+		$columnsNb = count($result[0]);
                 // 'Add' Table
 		if($sql_hasAddPerm)
 		{
@@ -399,7 +399,7 @@
 			}
 			echo '</tr>';
 			echo '<tr>';
-			echo '<td colspan="'.$columnNb.'">';
+			echo '<td colspan="'.$columnsNb.'">';
 			echo '<input type="button" class="SDP_'.$panel_uid.'_newButton" ';
 			echo 'data-paneluid="'.$panel_uid.'" ';
 			echo 'value="Add New Entry" ';
@@ -407,7 +407,7 @@
 			echo '</td>';
 			echo '</tr>';
 			echo '<tr>';
-			echo '<td colspan="'.$columnNb.'">';
+			echo '<td colspan="'.$columnsNb.'">';
 			echo '&nbsp;';
 			echo '</td>';
 			echo '</tr>';
