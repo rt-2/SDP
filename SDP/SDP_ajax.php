@@ -23,6 +23,7 @@
 	$table_index = $_SESSION['SDP']['SDP_'.$panel_uid]['index'];
 	$fields_permissions = $_SESSION['SDP']['SDP_'.$panel_uid]['access'];
 	$sdp_sqlInfos = $_SESSION['SDP']['SDP_'.$panel_uid]['sqlInfos'];
+	$SDP_logLevel = $_SESSION['SDP']['SDP_'.$panel_uid]['loglevel'];
         // Mysql Connection
 	$hostname = $sdp_sqlInfos['hostname'];
 	$username = $sdp_sqlInfos['username'];
@@ -152,6 +153,7 @@
 		//end script execution
 		exit();
 	}
+	
 	//send confiration message
 	echo 'Information updated.';
 
