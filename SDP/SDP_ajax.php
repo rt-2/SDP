@@ -1,4 +1,9 @@
 <?php
+
+	define('SDP_LOGLEVEL_NONE', 0);
+	//define('SDP_LOGLEVEL_COMPACT', 1);
+	define('SDP_LOGLEVEL_COMPLETE', 2);
+	
         // Functions
 	function ExplodeSaarpFieldPermissionString($fieldPermissionString)
 	{
@@ -24,6 +29,9 @@
 	$fields_permissions = $_SESSION['SDP']['SDP_'.$panel_uid]['access'];
 	$sdp_sqlInfos = $_SESSION['SDP']['SDP_'.$panel_uid]['sqlInfos'];
 	$SDP_logLevel = $_SESSION['SDP']['SDP_'.$panel_uid]['loglevel'];
+	$SDP_tableNameString = $_SESSION['SDP']['SDP_'.$panel_uid]['tablenamestring'];
+	$SDP_otherVars = $_SESSION['SDP']['SDP_'.$panel_uid]['othervars'];
+	
         // Mysql Connection
 	$hostname = $sdp_sqlInfos['hostname'];
 	$username = $sdp_sqlInfos['username'];
@@ -154,8 +162,39 @@
 		exit();
 	}
 	
+        //prepare query
+	$sql = $con->prepare("
+		UPDATE `$tablename`
+		SET `$field_name` = :value
+		WHERE `$table_index` = :indexid;
+	");
+	$sql->bindParam(':value', $field_value);
+	$sql->bindParam(':indexid', $indexid);
+	try {
+		//execute query
+		$sql->execute();
+	} catch (PDOException $e) {
+		//display error
+		echo 'Error: ' . $e->getMessage();
+		//end script execution
+		exit();
+	}
+	
+	if($SDP_logLevel == SDP_LOGLEVEL_COMPLETE) {
+		//$log_sql_string = ;
+	/*$SDP_logLevel = $_SESSION['SDP']['SDP_'.$panel_uid]['loglevel'];
+	$SDP_tableNameString = $_SESSION['SDP']['SDP_'.$panel_uid]['tablenamestring'];
+	$SDP_otherVars = $_SESSION['SDP']['SDP_'.$panel_uid]['othervars'];
+	
 	echo $SDP_logLevel;
-	echo "\n\n";
+	echo "\n\n";*/
+	}
+	
+	
+	
+	
+	
+	
 	
 	
 	//send confiration message
