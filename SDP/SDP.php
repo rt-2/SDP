@@ -1,7 +1,7 @@
 <?php
 	
 	define('SDP_LOGLEVEL_NONE', 0);
-	define('SDP_LOGLEVEL_COMPACT', 1);
+	//define('SDP_LOGLEVEL_COMPACT', 1);
 	define('SDP_LOGLEVEL_COMPLETE', 2);
 	
 	$SDP_logLevel = SDP_LOGLEVEL_NONE;
@@ -87,6 +87,9 @@
 		$_SESSION['SDP']['SDP_'.$panel_uid]['index'] = $tableindex;
 		$_SESSION['SDP']['SDP_'.$panel_uid]['access'] = $access;
 		$_SESSION['SDP']['SDP_'.$panel_uid]['loglevel'] = $SDP_logLevel;
+		$_SESSION['SDP']['SDP_'.$panel_uid]['tablenamestring'] = $SDP_tableNameString;
+		$_SESSION['SDP']['SDP_'.$panel_uid]['othervars'] = $SDP_otherVars;
+		
                 // BEGIN of Result Code
 		ob_start();
 		?>
@@ -499,7 +502,7 @@
 						echo '</textarea>';
 					} else {
 						echo'value="'.$value_forQuotes.'" ';
-						echo '<';
+						echo '>';
 					}
 				}
 				echo '</td>';
@@ -513,9 +516,11 @@
 		return $return_str;
 	}
 	
-	function SetSaarpDatabaseLogLevel($tablenamestring, $loglevel)
+	function SetSaarpDatabaseLogLevel($tablenamestring, $loglevel, $other_vars)
 	{
 		$SDP_logLevel = $loglevel;
+		$SDP_tableNameString = $tablenamestring;
+		$SDP_otherVars = $other_vars;
 	}
 	
 ?>
