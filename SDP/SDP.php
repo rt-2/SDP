@@ -331,11 +331,16 @@
 		$sql_fields_first = true;
 		foreach($access as $field=>$permissions)
 		{
-			$permissions = preg_replace('/\s+/', ' ', $permissions);
+			$permissions = preg_replace('/\s+/', '', $permissions);
 			$permissions_array = explode(',', $permissions);
 			$field_permissions[$field] = $permissions_array;
+			
+			echo '<br>'."test1 $field";
+			var_dump($permissions_array);
+			
 			if(in_array('read', $permissions_array))
 			{
+			echo '<br>'."test`2 $field";
 				if($sql_fields_first)
 				{
 					$sql_fields_first = false;
@@ -348,9 +353,26 @@
 			}
 			if(in_array('new', $permissions_array))
 			{
+			echo '<br>'."test3 $field";
 				$sql_hasAddPerm = true;
 			}
 		}
+		
+		// Get columns
+		$columns = [];
+		$sql = $con->prepare("
+			DESCRIBE `$tablename`
+		");
+		$sql->execute();
+		foreach($sql->fetchAll(PDO::FETCH_ASSOC) as $this_column) {
+			
+			$fieldname = $this_column['Field'];
+			
+			if(in_array('read', $field_permissions[$fieldname])) {
+				$columns[$fieldname] = $this_column;
+			}
+		}
+		
                 // Fetch All Needed Data From The Server
 		$sql = $con->prepare("
 			SELECT $sql_tableindex $sql_fields
@@ -360,17 +382,17 @@
 		");
 		$sql->execute();
 		$result = $sql->fetchAll(PDO::FETCH_ASSOC);
-		$columnsNb = count($result[0]);
+		$columnsNb = count($columns);
                 // 'Add' Table
 		if($sql_hasAddPerm)
 		{
-		        echo '<tr>';
-			foreach($result[0] as $field=>$value)
+		    echo '<tr>';
+			var_dump($result);
+			foreach($columns as $field=>$this_column)
 			{
-				
-				$field_addable = (in_array('new',$field_permissions[$field]))? true:false;
-				$field_isDate = (in_array('date',$field_permissions[$field]))? true:false;
-				$field_isText = (in_array('text',$field_permissions[$field]))? true:false;
+				$field_addable = (in_array('new', $field_permissions[$field]))? true:false;
+				$field_isDate = (in_array('date', $field_permissions[$field]))? true:false;
+				$field_isText = (in_array('text', $field_permissions[$field]))? true:false;
 				echo '<td>';
 				echo $field.':';
 				if($field_addable)
@@ -414,7 +436,7 @@
 		}
                 // Table Field Names
 		echo '<tr>';
-		foreach($result[0] as $field=>$value)
+		foreach($columns as $field=>$this_column)
 		{
 			echo '<td>';
 			echo $field;
