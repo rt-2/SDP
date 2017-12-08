@@ -50,6 +50,7 @@
 		try
 		{
 			$con = new PDO("mysql:host=$hostname;dbname=$dbname", $username, $password);
+			$con->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 			$con->exec("SET CHARACTER SET utf8");
 		}
 		catch(PDOException $e)
@@ -86,9 +87,9 @@
 		$_SESSION['SDP']['SDP_'.$panel_uid]['tablename'] = $tablename;
 		$_SESSION['SDP']['SDP_'.$panel_uid]['index'] = $tableindex;
 		$_SESSION['SDP']['SDP_'.$panel_uid]['access'] = $access;
-		$_SESSION['SDP']['SDP_'.$panel_uid]['loglevel'] = $SDP_logLevel;
-		$_SESSION['SDP']['SDP_'.$panel_uid]['tablenamestring'] = $SDP_tableNameString;
-		$_SESSION['SDP']['SDP_'.$panel_uid]['othervars'] = $SDP_otherVars;
+		$_SESSION['SDP']['SDP_'.$panel_uid]['loglevel'] = $GLOBALS['SDP_logLevel'];
+		$_SESSION['SDP']['SDP_'.$panel_uid]['tablenamestring'] = $GLOBALS['SDP_tableNameString'];
+		$_SESSION['SDP']['SDP_'.$panel_uid]['othervars'] = $GLOBALS['SDP_otherVars'];
 		
                 // BEGIN of Result Code
 		ob_start();
@@ -227,8 +228,8 @@
 					
 					function SDP_<?php echo $panel_uid; ?>_SendFieldEdit(indexid, field_uid, field_name, new_value) {
 						
-						alert('the value0: '+new_value);
-						alert('the value: '+toHex(new_value));
+						//alert('the value0: '+new_value);
+						//alert('the value: '+toHex(new_value));
 						$.ajax({
 							url : ajax_url,
 							type: "POST",
@@ -596,11 +597,11 @@
 		return $return_str;
 	}
 	
-	function SetSaarpDatabaseLogLevel($tablenamestring, $loglevel, $other_vars)
+	function SetSaarpDatabaseLogLevel($tablenamestring, $loglevel/*, $other_vars*/)
 	{
-		$SDP_logLevel = $loglevel;
-		$SDP_tableNameString = $tablenamestring;
-		$SDP_otherVars = $other_vars;
+		$GLOBALS['SDP_logLevel'] = $loglevel;
+		$GLOBALS['SDP_tableNameString'] = $tablenamestring;
+		//$GLOBAL['SDP_otherVars'] = $other_vars;
 	}
 	
 ?>
