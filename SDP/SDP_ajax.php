@@ -25,7 +25,7 @@
 	
 	
 	
-	echo "\n\n".substr($field_value, 0, 30);;
+	//echo "\n\n".substr($field_value, 0, 30);;
 	
         //fetch session vars
 	session_start();
@@ -35,6 +35,7 @@
 	$sdp_sqlInfos = $_SESSION['SDP']['SDP_'.$panel_uid]['sqlInfos'];
 	$SDP_logLevel = $_SESSION['SDP']['SDP_'.$panel_uid]['loglevel'];
 	$SDP_tableNameString = $_SESSION['SDP']['SDP_'.$panel_uid]['tablenamestring'];
+	$SDP_logTableName = str_replace('$tablename', $tablename, $SDP_tableNameString);
 	$SDP_otherVars = $_SESSION['SDP']['SDP_'.$panel_uid]['othervars'];
 	
         // Mysql Connection
@@ -45,12 +46,41 @@
 	try
 	{
 		$con = new PDO("mysql:host=$hostname;dbname=$dbname", $username, $password);
+		$con->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		$con->exec("SET CHARACTER SET utf8");
 	}
 	catch(PDOException $e)
 	{
 		echo $e->getMessage();
 	}
+	
+	//prepare stats if necessary
+	
+	if($SDP_logLevel != SDP_LOGLEVEL_NONE) {
+	
+		$sql = $con->prepare("
+			CREATE TABLE IF NOT EXISTS `$SDP_logTableName` (
+				`id` int NOT NULL AUTO_INCREMENT,
+				`session_id` tinytext NOT NULL,
+				`action_type` tinytext NOT NULL,
+				`fields` text NOT NULL,
+				`values` text NOT NULL,
+				`action_time` timestamp DEFAULT CURRENT_TIMESTAMP,
+				PRIMARY KEY (`id`)
+			);
+		");
+		try {
+			//execute query
+			$sql->execute();
+		} catch (PDOException $e) {
+			//display error
+			echo 'Error: ' . $e->getMessage();
+			//end script execution
+			exit();
+		}
+	
+	}
+	
 	// If Is Adding a New Row
 	if($indexid == 0)
 	{
@@ -86,18 +116,18 @@
 		$sql_fields .= ')';
 		$sql_values .= ')';
 		$sql = $con->prepare("
-		INSERT INTO `$tablename`
-		$sql_fields
-		VALUES
-		$sql_values
-		;
+			INSERT INTO `$tablename`
+			$sql_fields
+			VALUES
+			$sql_values
+			;
 		");
-		$i = 1;
+		//$i = 1;
 		foreach($values_arr as $field=>$value)
 		{
 			$str_tmp = ':'.$field;
 			$sql->bindValue(':'.$field, $value);
-			$i++;
+			//$i++;
 		}
 		try {
 			//execute query
@@ -116,6 +146,42 @@
 			//end script execution
 			exit();
 		}
+		
+		// Add statistics
+		if($SDP_logLevel == SDP_LOGLEVEL_COMPLETE) {
+			
+			$sql = $con->prepare("
+				INSERT INTO `$SDP_logTableName`
+				(`session_id`, `action_type`, `fields`, `values`)
+				VALUES
+				(:session_id, 'new', :fields, :values)
+				;
+			");
+			
+			$sql->bindParam(':session_id', session_id());
+			$sql->bindParam(':fields', $sql_fields);
+			
+			$final_values_str = $sql_values;
+			foreach($values_arr as $field=>$value)
+			{
+				$str_tmp = ':'.$field;
+				$final_values_str = str_replace(':'.$field, $value, $final_values_str);
+			}
+			$sql->bindParam(':values', $final_values_str);
+			
+			try {
+				//execute query
+				$sql->execute();
+			} catch (PDOException $e) {
+				//display error
+				echo 'Error: ' . $e->getMessage();
+				//end script execution
+				exit();
+			}
+			
+		}
+		
+		
 	        //send confiration message
 		echo 'Row added.';
                 //end script execution
@@ -185,21 +251,44 @@
 		exit();
 	}
 	
-	if($SDP_logLevel == SDP_LOGLEVEL_COMPLETE) {
-		//$log_sql_string = ;
-	/*$SDP_logLevel = $_SESSION['SDP']['SDP_'.$panel_uid]['loglevel'];
-	$SDP_tableNameString = $_SESSION['SDP']['SDP_'.$panel_uid]['tablenamestring'];
-	$SDP_otherVars = $_SESSION['SDP']['SDP_'.$panel_uid]['othervars'];
+	// Add statistics
 	
-	echo $SDP_logLevel;
-	echo "\n\n";*/
+	//echo "\n\n".$SDP_logLevel;
+	
+	if($SDP_logLevel == SDP_LOGLEVEL_COMPLETE) {
+		
+		$sql = $con->prepare("
+			INSERT INTO `$SDP_logTableName`
+			(`session_id`, `action_type`, `fields`, `values`)
+			VALUES
+			(:session_id, 'edit', :fields, :values)
+			;
+		");
+		
+		$sql->bindParam(':session_id', session_id());
+		
+		$sql->bindParam(':fields', $field_name);
+		$sql->bindParam(':values', $field_value);
+		
+		
+		try {
+			//execute query
+			$sql->execute();
+		} catch (PDOException $e) {
+			//display error
+			echo 'Error: ' . $e->getMessage();
+			//end script execution
+			exit();
+		}
+		
 	}
 	
 	
 	
 	
+	//echo "\n\n".substr($field_value, 0, 30);
 	
-	
+	//echo "\n\n";
 	
 	
 	//send confiration message
