@@ -5,13 +5,50 @@
 	define('SDP_LOGLEVEL_COMPLETE', 2);
 	
         // Functions
+	function fromUni($string)
+	{
+		$return_string = '';
+		//echo "\n\n string: "; var_dump($string);
+		$string_array = explode('\\u', $string);
+		//echo "\n\n string_array("+count($string_array)+"): "; var_dump($string_array);
+		for($c = 1; $c < count($string_array); $c++)
+		{
+			
+			$char = (int) $string_array[$c];
+			//$char = base_convert($char, 16, 10);
+			$char = chr($char);
+			
+			$return_string = substr_replace($return_string, $char, $c, 1);
+		}
+		//echo "\n\n return_string: "; var_dump($return_string);
+		return $return_string;
+	}
+	function tohex($ascii) {
+		$hex = '';
+		for ($i = 0; $i < strlen($ascii); $i++) {
+			$byte = strtoupper(dechex(ord($ascii{$i})));
+			$byte = str_repeat('0', 2 - strlen($byte)).$byte;
+			$hex.=$byte." ";
+		}
+		return $hex;
+	}
+        // Functions
 	function ExplodeSaarpFieldPermissionString($fieldPermissionString)
 	{
 		$return_array = array();
 		$return_string = $fieldPermissionString;
-		$return_string = str_replace(' ', '', $return_string);
+		$return_string = preg_replace('/\s+/', '', $return_string);
 		$return_array = explode(',', $return_string);
 		return $return_array;
+	}
+	function TransformBlobUrlForDatabase($blob)
+	{
+		$return = $blob;
+		$return = preg_replace('/data:([A-Za-z]+)\/([A-Za-z]+);base64,/', '', $return);
+		$return = base64_decode($return);
+		$return = tohex($return);
+		$return = '0x'.strtolower(preg_replace('/\s+/', '', $return));
+		return $return;
 	}
         // Basic Vars
 	//fetch post vars
@@ -19,14 +56,26 @@
 	$indexid = $_POST['indexid'];
 	$field_name = $_POST['field'];
 	$field_value = $_POST['value'];
-	$field_value = json_decode('"'.$field_value.'"'); // this acts as fromHex
-	$field_value = strtr($field_value, array("\r\n" => '<br>', "\r" => '<br>', "\n" => '<br>'));
 	$values = $_POST['values'];
 	
+	/*
+	echo "\n\n".substr($field_value, 0, 30);
+	
+	//$field_value = base64_decode($field_value);
+	//$field_value = tohex($field_value);
+	
+	echo "\n\n".substr($field_value, 0, 30);
+	
+	//$field_value = '0x'.preg_replace('/\s+/', '', $field_value);
+	
+	echo "\n\n".substr($field_value, 0, 30);
 	
 	
-	//echo "\n\n".substr($field_value, 0, 30);;
+	//$field_value = utf8_encode($field_value);
 	
+	echo "\n\n";
+	
+	echo "\n\n".substr($field_value, 0, 30);*/
         //fetch session vars
 	session_start();
 	$tablename = $_SESSION['SDP']['SDP_'.$panel_uid]['tablename'];
@@ -54,6 +103,37 @@
 		echo $e->getMessage();
 	}
 	
+	// Fields transormations
+	
+	//echo "\n\n".substr($field_value, 0, 30);
+	if($field_name)
+	{
+		
+		$field_permissions = $fields_permissions[$field_name];
+		if(
+			in_array(
+				'blob',
+				ExplodeSaarpFieldPermissionString(
+					$field_permissions
+				),
+				false
+			)
+		)
+		{
+			
+			// Is blob
+			$field_value = TransformBlobUrlForDatabase($field_value);
+		}
+		else{
+			
+			// Normal
+			$field_value = strtr($field_value, array("\r\n" => '<br>', "\r" => '<br>', "\n" => '<br>'));
+			
+		}
+		
+	}
+	//echo "\n\n".substr($field_value, 0, 30);
+	
 	//prepare stats if necessary
 	
 	if($SDP_logLevel != SDP_LOGLEVEL_NONE) {
@@ -63,8 +143,8 @@
 				`id` int NOT NULL AUTO_INCREMENT,
 				`session_id` tinytext NOT NULL,
 				`action_type` tinytext NOT NULL,
-				`fields` text NOT NULL,
-				`values` text NOT NULL,
+				`fields` longtext NOT NULL,
+				`values` longtext NOT NULL,
 				`action_time` timestamp DEFAULT CURRENT_TIMESTAMP,
 				PRIMARY KEY (`id`)
 			);
@@ -89,9 +169,7 @@
         //prepare query
 		foreach($values_arr as $field=>$value)
 		{
-			$permissions_array = explode(',', $fields_permissions[$field]);
-			$field_permissions[$field] = $permissions_array;
-			$field_editable = (in_array('new',$field_permissions[$field]))? true:false;
+			$field_editable = (in_array('new',ExplodeSaarpFieldPermissionString($fields_permissions[$field])))? true:false;
 			if(!$field_editable) die('Permission denied'.$field );
 		}
 		$sql_fields = '';
@@ -101,6 +179,9 @@
 		$sql_values .= '(';
 		foreach($values_arr as $field=>$value)
 		{
+			
+			$field_isBlob = (in_array('blob',ExplodeSaarpFieldPermissionString($fields_permissions[$field])))? true:false;
+	
 			if($sql_fields_first)
 			{
 				$sql_fields_first = false;
@@ -111,7 +192,11 @@
 				$sql_values .= ',';
 			}
 			$sql_fields .= '`'.$field.'`';
-			$sql_values .= ':'.$field.'';
+			if($field_isBlob) {
+				$sql_values .= ''.TransformBlobUrlForDatabase($value).'';
+			} else{
+				$sql_values .= ':'.$field.'';
+			}
 		}
 		$sql_fields .= ')';
 		$sql_values .= ')';
@@ -122,11 +207,20 @@
 			$sql_values
 			;
 		");
+		echo "
+			INSERT INTO `$tablename`
+			$sql_fields
+			VALUES
+			$sql_values
+			;
+		";
 		//$i = 1;
 		foreach($values_arr as $field=>$value)
 		{
-			$str_tmp = ':'.$field;
-			$sql->bindValue(':'.$field, $value);
+			//$field_isBlob = (in_array('new',ExplodeSaarpFieldPermissionString($fields_permissions[$field])))? true:false;
+			$field_isBlob = (in_array('blob',ExplodeSaarpFieldPermissionString($fields_permissions[$field])))? true:false;
+	
+			if(!$field_isBlob) $sql->bindValue(':'.$field, $value);
 			//$i++;
 		}
 		try {
@@ -167,6 +261,8 @@
 				$str_tmp = ':'.$field;
 				$final_values_str = str_replace(':'.$field, $value, $final_values_str);
 			}
+			
+			
 			$sql->bindParam(':values', $final_values_str);
 			
 			try {
@@ -189,12 +285,11 @@
 	}
 	// If Is Updating a row (or would have exited)
         //check permitions for 'write'
-	$field_permissions = $fields_permissions[$field_name];
 	if(!(
 		in_array(
 			'write',
 			ExplodeSaarpFieldPermissionString(
-				$field_permissions
+				$fields_permissions[$field_name]
 			),
 			false
 		)
@@ -202,6 +297,9 @@
 	{
 		die('Permition denied');
 	}
+	
+	$field_isBlob = (in_array('blob',ExplodeSaarpFieldPermissionString($fields_permissions[$field_name])))? true:false;
+	
 	// Action
         //test for protection against sql injection for $field_name
 	if(!array_key_exists($field_name,$fields_permissions))
@@ -209,12 +307,37 @@
 		die('Permition denied');
 	}
         //prepare query
+	if($field_isBlob)
+	{
+		//echo 'phase 1';
+	$sql = $con->prepare("
+		UPDATE `$tablename`
+		SET `$field_name` = $field_value
+		WHERE `$table_index` = :indexid;
+	");
+		//$sql->bindParam(':value', $field_value, PDO::PARAM_LOB);
+	echo "\n\n"."
+		UPDATE `$tablename`
+		SET `$field_name` = '$field_value'
+		WHERE `$table_index` = :indexid;
+	";
+	}
+	else
+	{
+		//echo 'phase 2';
 	$sql = $con->prepare("
 		UPDATE `$tablename`
 		SET `$field_name` = :value
 		WHERE `$table_index` = :indexid;
 	");
-	$sql->bindParam(':value', $field_value);
+		$sql->bindParam(':value', $field_value);
+	/*echo "\n\n"."
+		UPDATE `$tablename`
+		SET `$field_name` = '$field_value'
+		WHERE table_index` = :indexid;
+	";*/
+		
+	}
 	$sql->bindParam(':indexid', $indexid);
 	try {
 		//execute query
@@ -229,24 +352,6 @@
 	{
 		//display error
 		echo 'Error: '.$sql->errorInfo()[2];
-		//end script execution
-		exit();
-	}
-	
-        //prepare query
-	$sql = $con->prepare("
-		UPDATE `$tablename`
-		SET `$field_name` = :value
-		WHERE `$table_index` = :indexid;
-	");
-	$sql->bindParam(':value', $field_value);
-	$sql->bindParam(':indexid', $indexid);
-	try {
-		//execute query
-		$sql->execute();
-	} catch (PDOException $e) {
-		//display error
-		echo 'Error: ' . $e->getMessage();
 		//end script execution
 		exit();
 	}
@@ -288,7 +393,8 @@
 	
 	//echo "\n\n".substr($field_value, 0, 30);
 	
-	//echo "\n\n";
+	echo "\n\n";
+	echo "\n\n";
 	
 	
 	//send confiration message
