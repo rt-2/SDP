@@ -164,6 +164,7 @@
 	// If Is Adding a New Row
 	if($indexid == 0)
 	{
+			echo "\n".$values."\n";
 		//vars
 		$values_arr = json_decode($values);
         //prepare query
@@ -193,7 +194,7 @@
 			}
 			$sql_fields .= '`'.$field.'`';
 			if($field_isBlob) {
-				$sql_values .= ''.TransformBlobUrlForDatabase($value).'';
+				$sql_values .= ''.TransformBlobUrlForDatabase($value).'1111ffff';
 			} else{
 				$sql_values .= ':'.$field.'';
 			}
@@ -207,19 +208,20 @@
 			$sql_values
 			;
 		");
-		echo "
-			INSERT INTO `$tablename`
-			$sql_fields
-			VALUES
-			$sql_values
-			;
-		";
+		//echo "
+		//	INSERT INTO `$tablename`
+		//	$sql_fields
+		//	VALUES
+		//	$sql_values
+		//	;
+		//";
 		//$i = 1;
 		foreach($values_arr as $field=>$value)
 		{
 			//$field_isBlob = (in_array('new',ExplodeSaarpFieldPermissionString($fields_permissions[$field])))? true:false;
 			$field_isBlob = (in_array('blob',ExplodeSaarpFieldPermissionString($fields_permissions[$field])))? true:false;
 	
+			echo "\n".$value."\n";
 			if(!$field_isBlob) $sql->bindValue(':'.$field, $value);
 			//$i++;
 		}
@@ -310,32 +312,32 @@
 	if($field_isBlob)
 	{
 		//echo 'phase 1';
-	$sql = $con->prepare("
-		UPDATE `$tablename`
-		SET `$field_name` = $field_value
-		WHERE `$table_index` = :indexid;
-	");
-		//$sql->bindParam(':value', $field_value, PDO::PARAM_LOB);
-	echo "\n\n"."
-		UPDATE `$tablename`
-		SET `$field_name` = '$field_value'
-		WHERE `$table_index` = :indexid;
-	";
+		$sql = $con->prepare("
+			UPDATE `$tablename`
+			SET `$field_name` = $field_value
+			WHERE `$table_index` = :indexid;
+		");
+		
+		//echo "\n\n"."
+		//	UPDATE `$tablename`
+		//	SET `$field_name` = '$field_value'
+		//	WHERE `$table_index` = :indexid;
+		//";
 	}
 	else
 	{
 		//echo 'phase 2';
-	$sql = $con->prepare("
-		UPDATE `$tablename`
-		SET `$field_name` = :value
-		WHERE `$table_index` = :indexid;
-	");
+		$sql = $con->prepare("
+			UPDATE `$tablename`
+			SET `$field_name` = :value
+			WHERE `$table_index` = :indexid;
+		");
 		$sql->bindParam(':value', $field_value);
-	/*echo "\n\n"."
-		UPDATE `$tablename`
-		SET `$field_name` = '$field_value'
-		WHERE table_index` = :indexid;
-	";*/
+		//echo "\n\n"."
+		//	UPDATE `$tablename`
+		//	SET `$field_name` = '$field_value'
+		//	WHERE table_index` = :indexid;
+		//";
 		
 	}
 	$sql->bindParam(':indexid', $indexid);
@@ -393,8 +395,8 @@
 	
 	//echo "\n\n".substr($field_value, 0, 30);
 	
-	echo "\n\n";
-	echo "\n\n";
+	//echo "\n\n";
+	//echo "\n\n";
 	
 	
 	//send confiration message
