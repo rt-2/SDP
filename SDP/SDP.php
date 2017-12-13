@@ -299,6 +299,60 @@
 							view_element.show();
 						}
 					});
+					$(".SDP_<?php echo $panel_uid; ?>_editor .SDP_blob").change(function() {
+						/*if($(this).hasClass('SDP_blob'))
+						{
+							
+							
+							// Vars
+							var editor_element = $(this);
+							var indexid = editor_element.attr('data-indexid');
+							var field_uid = editor_element.attr('data-fielduid');
+							var field_name = editor_element.attr('data-fieldname');
+							var view_element = $("#SDP_view_"+field_uid+" img").first();
+							var data_valAttr = editor_element.attr('data-valAttr');
+							
+							// Action
+							
+							//console.log(editor_element);
+							//console.log(editor_element[0].files);
+							//console.log(editor_element[0].files[0]);
+							
+							if (editor_element[0].files && editor_element[0].files[0]) {
+								
+								var file_value = editor_element[0].files[0];
+									
+								//if(new_value != Player_Current_Clipboard)
+								//{
+									var img_FRObject = new FileReader();
+									var txt_FRObject = new FileReader();
+									img_FRObject.readAsDataURL(file_value, 'UTF-8');
+									//txt_FRObject.readAsText(file_value, 'UTF-8');
+									txt_FRObject.readAsDataURL(file_value, 'UTF-8');
+
+									
+									img_FRObject.onload = function (oFREvent) {
+										
+										var img_value = oFREvent.target.result;
+										
+										view_element.attr('src', img_value);
+										
+										
+										
+									};
+									txt_FRObject.onload = function (oFREvent) {
+										
+										var new_value = oFREvent.target.result;
+										SDP_<?php echo $panel_uid; ?>_SendFieldEdit(indexid, field_uid, field_name, new_value);
+										//$('#SDP_<?php echo $panel_uid; ?>_damntest').html(toUni(new_value));
+										$('#SDP_<?php echo $panel_uid; ?>_damntest').html(new_value.substring(23, 53)+'<br>'+toUni(new_value).substring(23, 53));
+									};
+									//SDP_<?php echo $panel_uid; ?>_SendFieldEdit(indexid, field_uid, field_name, new_value);
+									
+								//}
+							}
+						}*/
+					});
 					$(".SDP_<?php echo $panel_uid; ?>_editor").change(function() {
 						if($(this).hasClass('SDP_blob'))
 						{
@@ -344,14 +398,14 @@
 										
 										var new_value = oFREvent.target.result;
 										SDP_<?php echo $panel_uid; ?>_SendFieldEdit(indexid, field_uid, field_name, new_value);
-										$('#SDP_<?php echo $panel_uid; ?>_damntest').html(toUni(new_value));
+										//$('#SDP_<?php echo $panel_uid; ?>_damntest').html(toUni(new_value));
+										$('#SDP_<?php echo $panel_uid; ?>_damntest').html(new_value.substring(23, 53)+'<br>'+toUni(new_value).substring(23, 53));
 									};
 									//SDP_<?php echo $panel_uid; ?>_SendFieldEdit(indexid, field_uid, field_name, new_value);
 									
 								//}
 							}
 						}
-						
 					});
 					$(".SDP_<?php echo $panel_uid; ?>_newButton").click(function() {
 						// Vars
@@ -374,19 +428,35 @@
 							new_values += '"'+editor_element.attr('data-fieldname')+'"';
 							new_values += ':';
 							data_valAttr = editor_element.attr('data-valAttr');
-							new_values += '"'+toUni(editor_element.val())+'"';
+							
+							
+							//if (editor_element[0].files && editor_element[0].files[0]) {
+							//	
+							//	new_values += '"'+editor_element[0].files[0]+'"';
+							//	$('#SDP_0_damntest').html(editor_element[0].files[0].substring(0, 30)+'<br>'+toUni(editor_element[0].files[0]).substring(0, 30));
+							//}
+							//else{
+								new_values += '"'+editor_element.val()+'"';
+							//}
+							
+							
 							
 						});
 						new_values += ' }';
+						
+						
+						var fd = new FormData();
+						fd.append('panel_uid', panel_uid);
+						fd.append('indexid', indexid);
+						fd.append('values', new_values);
+						
 						// Actions
 						$.ajax({
 							url : ajax_url,
 							type: "POST",
-							data : {
-								panel_uid: panel_uid,
-								indexid: indexid,
-								values: new_values
-							},
+							processData: false,
+							contentType: false,
+							data : fd,
 							success: function(data, textStatus, jqXHR)
 							{
 								//data - response from server
@@ -564,20 +634,20 @@
 					?>
 					<script>
 						$(document).ready(function() {
-							
+							/*
 								var tstring = '<?php echo base64_encode($value); ?>';
 							
 								$('#SDP_<?php echo $panel_uid; ?>_damntest').html(tstring.substring(0, 30)+'<br>'+toUni(tstring).substring(0, 30));
 								//$('#SDP_<?php echo $panel_uid; ?>_damntest').html(toUni('Hello world'));
-							
+							*/
 						});
 					</script>
 					<?php
 					
 				echo '<div id="SDP_'.$panel_uid.'_damntest" >';
-					echo base64_encode($value);
+					//echo base64_encode($value);
 				echo '</div>';
-					echo '<img src="data:image/jpeg;base64,'.base64_encode( $value ).'"/>';
+					echo '<img src="data:image/png;base64,'.base64_encode( $value ).'"/>';
 				}
 				else{
 					
