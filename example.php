@@ -30,6 +30,7 @@
 					$db_access['field3'] = 'read, write, new';
 					$db_access['date'] = 'read, new, date';
 					$db_access['comment'] = 'read, write, new, text';
+					$db_access['photo'] = 'read, write, blob, new';
 					//function
 					echo SpawnSaarpDatabasePanel($sdp_sqlInfos, $tablename, $db_access, $where, $order);
 				?>
