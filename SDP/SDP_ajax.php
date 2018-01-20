@@ -1,10 +1,16 @@
 <?php
-
+	
 	define('SDP_LOGLEVEL_NONE', 0);
 	//define('SDP_LOGLEVEL_COMPACT', 1);
 	define('SDP_LOGLEVEL_COMPLETE', 2);
 	
-        // Functions
+    // Functions
+	function json_decode_nice($json, $assoc = TRUE){
+		$json = str_replace(array("\n","\r"),"\\n", $json);
+		$json = preg_replace('/([{,]+)(\s*)([^"]+?)\s*:/','$1"$3":',$json);
+		$json = preg_replace('/(,)\s*}$/','}',$json);
+		return json_decode($json,$assoc);
+	}
 	function fromUni($string)
 	{
 		$return_string = '';
@@ -156,7 +162,7 @@
 			//display error
 			echo 'Error: ' . $e->getMessage();
 			//end script execution
-			exit();
+			exit(0);
 		}
 	
 	}
@@ -164,9 +170,20 @@
 	// If Is Adding a New Row
 	if($indexid == 0)
 	{
-			echo "\n".$values."\n";
+		//$values = str_replace(',', '__sdpc__', $values);
+		//$values = str_replace("\n\r", '__sdpn__', $values);
 		//vars
-		$values_arr = json_decode($values);
+		//$values = str_replace('"', '__sdpq__', $values);
+		//$values = preg_replace('/(?<!:|: )"(?=[^"]*?"(( [^:])|([,}])))/', '\\"', $values);
+		$values = str_replace(array("\n\r", "\n", "\r"), '__sdpn__', $values);
+		//echo "\n\n\n";
+		//var_dump($values);
+		//echo "\n\n\n";
+		$values_arr = json_decode($values, true);
+		
+		//echo "\n\n\n";
+		//var_dump($values_arr);
+		//echo "\n\n\n";
         //prepare query
 		foreach($values_arr as $field=>$value)
 		{
@@ -220,8 +237,9 @@
 		{
 			//$field_isBlob = (in_array('new',ExplodeSaarpFieldPermissionString($fields_permissions[$field])))? true:false;
 			$field_isBlob = (in_array('blob',ExplodeSaarpFieldPermissionString($fields_permissions[$field])))? true:false;
-	
-			echo "\n".$value."\n";
+			
+			$value = str_replace('__sdpn__',"\n\r", $value);
+			//$value = str_replace('__sdpq__','"', $value);
 			if(!$field_isBlob) $sql->bindValue(':'.$field, $value);
 			//$i++;
 		}
@@ -232,7 +250,7 @@
 			//display error
 			echo 'Error: ' . $e->getMessage();
 			//end script execution
-			exit();
+			exit(0);
 		}
 		if($sql->errorInfo()[0]!= '00000')
 		{
@@ -240,7 +258,7 @@
 			echo 'Error: '.$sql->errorInfo()[2];
 			
 			//end script execution
-			exit();
+			exit(0);
 		}
 		
 		// Add statistics
@@ -274,7 +292,7 @@
 				//display error
 				echo 'Error: ' . $e->getMessage();
 				//end script execution
-				exit();
+				exit(0);
 			}
 			
 		}
@@ -283,7 +301,7 @@
 	        //send confiration message
 		echo 'Row added.';
                 //end script execution
-		exit();
+		exit(0);
 	}
 	// If Is Updating a row (or would have exited)
         //check permitions for 'write'
@@ -348,14 +366,14 @@
 		//display error
 		echo 'Error: ' . $e->getMessage();
 		//end script execution
-		exit();
+		exit(0);
 	}
 	if($sql->errorInfo()[0]!= '00000')
 	{
 		//display error
 		echo 'Error: '.$sql->errorInfo()[2];
 		//end script execution
-		exit();
+		exit(0);
 	}
 	
 	// Add statistics
@@ -385,7 +403,7 @@
 			//display error
 			echo 'Error: ' . $e->getMessage();
 			//end script execution
-			exit();
+			exit(0);
 		}
 		
 	}
