@@ -485,12 +485,14 @@
                 // Table Creation Vars
 		$sql_hasAddPerm = false;
 		$sql_fields = '';
+		$sql_field_list = array();
                 // Verify Permitions and Check if has any 'adding' power.
 		$sql_fields_first = true;
 		foreach($access as $field=>$permissions)
 		{
 			$permissions = preg_replace('/\s+/', '', $permissions);
 			$permissions_array = explode(',', $permissions);
+			$sql_field_list[] = $field;
 			$field_permissions[$field] = $permissions_array;
 			
 			if(in_array('read', $permissions_array))
@@ -543,39 +545,42 @@
 			//var_dump($result);
 			foreach($columns as $field=>$this_column)
 			{
-				$field_addable = (in_array('new', $field_permissions[$field]))? true:false;
-				$field_isDate = (in_array('date', $field_permissions[$field]))? true:false;
-				$field_isText = (in_array('text', $field_permissions[$field]))? true:false;
-				$field_isBlob = (in_array('blob', $field_permissions[$field]))? true:false;
-				
-				echo '<td>';
-				echo $field.':';
-				if($field_addable)
-				{
-					if($field_isText) {
-						echo '<textarea ';
-					} elseif($field_isBlob) {
-						echo '<input type="file" ';
-					} else {
-						echo '<input type="text" ';
+				if(in_array($field,$sql_field_list)) {
+					// Field was in original asked list
+					$field_addable = (in_array('new', $field_permissions[$field]))? true:false;
+					$field_isDate = (in_array('date', $field_permissions[$field]))? true:false;
+					$field_isText = (in_array('text', $field_permissions[$field]))? true:false;
+					$field_isBlob = (in_array('blob', $field_permissions[$field]))? true:false;
+
+					echo '<td>';
+					echo $field.':';
+					if($field_addable)
+					{
+						if($field_isText) {
+							echo '<textarea ';
+						} elseif($field_isBlob) {
+							echo '<input type="file" ';
+						} else {
+							echo '<input type="text" ';
+						}
+						echo 'class="SDP_'.$panel_uid.'_newField ';
+						if($field_isDate) echo 'SDP_dateMasked ';
+						if($field_isBlob) echo 'SDP_blob ';
+						echo'" ';
+						echo'data-fieldname="'.$field.'" ';
+						if($field_isText) {
+							echo '>';
+							echo $value_forQuotes;
+							echo '</textarea>';
+						} elseif($field_isBlob) {
+							echo '>';
+						} else {
+							echo'value="'.$value_forQuotes.'" ';
+							echo '<';
+						}
 					}
-					echo 'class="SDP_'.$panel_uid.'_newField ';
-					if($field_isDate) echo 'SDP_dateMasked ';
-					if($field_isBlob) echo 'SDP_blob ';
-					echo'" ';
-					echo'data-fieldname="'.$field.'" ';
-					if($field_isText) {
-						echo '>';
-						echo $value_forQuotes;
-						echo '</textarea>';
-					} elseif($field_isBlob) {
-						echo '>';
-					} else {
-						echo'value="'.$value_forQuotes.'" ';
-						echo '<';
-					}
+					echo '</td>';
 				}
-				echo '</td>';
 			}
 			
 			
