@@ -1,4 +1,4 @@
-<?php
+?php
 	
 	define('SDP_LOGLEVEL_NONE', 0);
 	//define('SDP_LOGLEVEL_COMPACT', 1);
@@ -494,6 +494,15 @@
 			$permissions_array = explode(',', $permissions);
 			$sql_field_list[] = $field;
 			$field_permissions[$field] = $permissions_array;
+
+			$field_label = $field;
+			foreach($permissions_array as $perm) {
+				if(strpos($perm, 'label:') === 0) {
+					$field_label = substr($perm, 6);
+					break;
+				}
+			}
+			$field_labels[$field] = $field_label;
 			
 			if(in_array('read', $permissions_array))
 			{
@@ -553,7 +562,7 @@
 					$field_isBlob = (in_array('blob', $field_permissions[$field]))? true:false;
 
 					echo '<td>';
-					echo $field.':';
+					echo $field_labels[$field].':';
 					if($field_addable)
 					{
 						if($field_isText) {
@@ -604,7 +613,7 @@
 		foreach($columns as $field=>$this_column)
 		{
 			echo '<td>';
-			echo $field;
+			echo $field_labels[$field];
 			echo '</td>';
 		}
                 // Table Content
