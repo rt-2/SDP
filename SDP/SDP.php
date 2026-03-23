@@ -1,4 +1,4 @@
-?php
+<?php
 	
 	define('SDP_LOGLEVEL_NONE', 0);
 	//define('SDP_LOGLEVEL_COMPACT', 1);
